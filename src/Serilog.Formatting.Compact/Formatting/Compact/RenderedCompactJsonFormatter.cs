@@ -59,37 +59,36 @@ namespace Serilog.Formatting.Compact
             if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
             if (output == null) throw new ArgumentNullException(nameof(output));
             if (valueFormatter == null) throw new ArgumentNullException(nameof(valueFormatter));
-
-            output.Write("{\"@t\":\"");
+            output.Write($"{{\"{CONSTANTS.PROPERTYPREFIX}t\":\"");
             output.Write(logEvent.Timestamp.UtcDateTime.ToString("O"));
-            output.Write("\",\"@m\":");
+            output.Write($"\",\"{CONSTANTS.PROPERTYPREFIX}m\":");
             var message = logEvent.MessageTemplate.Render(logEvent.Properties);
             JsonValueFormatter.WriteQuotedJsonString(message, output);
-            output.Write(",\"@i\":\"");
+            output.Write($",\"{CONSTANTS.PROPERTYPREFIX}i\":\"");
             var id = EventIdHash.Compute(logEvent.MessageTemplate.Text);
             output.Write(id.ToString("x8"));
             output.Write('"');
 
             if (logEvent.Level != LogEventLevel.Information)
             {
-                output.Write(",\"@l\":\"");
+                output.Write($",\"{CONSTANTS.PROPERTYPREFIX}l\":\"");
                 output.Write(logEvent.Level);
                 output.Write('\"');
             }
 
             if (logEvent.Exception != null)
             {
-                output.Write(",\"@x\":");
+                output.Write($",\"{CONSTANTS.PROPERTYPREFIX}x\":");
                 JsonValueFormatter.WriteQuotedJsonString(logEvent.Exception.ToString(), output);
             }
 
             foreach (var property in logEvent.Properties)
             {
                 var name = property.Key;
-                if (name.Length > 0 && name[0] == '@')
+                if (name.Length > 0 && name[0] == CONSTANTS.PROPERTYPREFIX)
                 {
                     // Escape first '@' by doubling
-                    name = '@' + name;
+                    name = CONSTANTS.PROPERTYPREFIX + name;
                 }
 
                 output.Write(',');

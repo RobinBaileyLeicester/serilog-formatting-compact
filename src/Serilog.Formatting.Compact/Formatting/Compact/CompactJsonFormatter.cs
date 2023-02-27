@@ -21,6 +21,10 @@ using Serilog.Parsing;
 
 namespace Serilog.Formatting.Compact
 {
+    static internal class CONSTANTS {
+        internal const char PROPERTYPREFIX = '_';
+        }
+    
     /// <summary>
     /// An <see cref="ITextFormatter"/> that writes events in a compact JSON format.
     /// </summary>
@@ -74,7 +78,7 @@ namespace Serilog.Formatting.Compact
             // ReSharper disable once PossibleMultipleEnumeration
             if (tokensWithFormat.Any())
             {
-                output.Write(",\"@r\":[");
+                output.Write($",\"{CONSTANTS.PROPERTYPREFIX}r\":[");
                 var delim = "";
                 foreach (var r in tokensWithFormat)
                 {
@@ -89,24 +93,24 @@ namespace Serilog.Formatting.Compact
 
             if (logEvent.Level != LogEventLevel.Information)
             {
-                output.Write(",\"@l\":\"");
+                output.Write($",\"{CONSTANTS.PROPERTYPREFIX}l\":\"");
                 output.Write(logEvent.Level);
                 output.Write('\"');
             }
 
             if (logEvent.Exception != null)
             {
-                output.Write(",\"@x\":");
+                output.Write($",\"{CONSTANTS.PROPERTYPREFIX}x\":");
                 JsonValueFormatter.WriteQuotedJsonString(logEvent.Exception.ToString(), output);
             }
 
             foreach (var property in logEvent.Properties)
             {
                 var name = property.Key;
-                if (name.Length > 0 && name[0] == '@')
+                if (name.Length > 0 && name[0] == CONSTANTS.PROPERTYPREFIX)
                 {
                     // Escape first '@' by doubling
-                    name = '@' + name;
+                    name = CONSTANTS.PROPERTYPREFIX + name;
                 }
 
                 output.Write(',');
